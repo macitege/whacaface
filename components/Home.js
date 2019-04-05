@@ -15,36 +15,37 @@ export default class Home extends Component {
     super()
 
     this.state = {
-      currentPlayer: {
-        id: null,
-        name: null,
-        score: null
-      },
+      playerName: null,
+      currentPlayer: null,
       previousPlayers: [{
         id: 0,
         name: 'Ege',
         score: 120
       }]
     }
+  }
 
+  componentDidUpdate = () => {
+    const { currentPlayer } = this.state
+    if (currentPlayer) {
+      this.props.navigation.navigate('Game', { currentPlayer: currentPlayer })
+    }
   }
 
   generateId = () => {
-    return this.state.previousPlayers.length + 1
+    return this.state.previousPlayers.length
   }
 
   startGame = () => {
-    if (!this.state.currentPlayer.name) {
+    const { currentPlayer, playerName } = this.state
+    if (!playerName) {
       return Alert.alert('Please enter a player name')
     }
     const newId = this.generateId()
-    this.setState({ currentPlayer: { ...this.state.currentPlayer, id: newId }})
-    this.props.navigation.navigate('Game')
+    this.setState({ currentPlayer: { name: playerName, id: newId } })
   }
 
-  handleChange = text => this.setState({
-    currentPlayer: { ...this.state.currentPlayer, name: text }
-  })
+  handleChange = text => this.setState({ playerName: text })
 
   render() {
     return (
@@ -93,10 +94,10 @@ export default class Home extends Component {
   }
 }
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: '#FB0C',
+    backgroundColor: '#fefefe',
     alignItems: 'center',
   },
   content: {
@@ -111,11 +112,11 @@ const styles = StyleSheet.create({
   },
   logo: {
     fontSize: 70,
-    color: '#fa9000',
+    color: '#522',
   },
   logoText: {
     fontSize: 50,
-    color: '#fefefe',
+    color: '#522',
   },
   playerName: {
     fontSize: 30,

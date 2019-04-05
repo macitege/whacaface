@@ -6,14 +6,18 @@ import {createStackNavigator, createAppContainer} from 'react-navigation';
 export default class App extends React.Component {
   render() {
     return (
-      <AppStackNavigator />
+      <AppNavigator />
     );
   }
 }
 
 const MainNavigator = createStackNavigator({
-  Home: Home,
-  Game: Game
+  Game: {
+    screen: Game
+  },
+  Home: {
+    screen: Home
+  },
 });
 
-const AppStackNavigator = createAppContainer(MainNavigator);
+const AppNavigator = createAppContainer(MainNavigator);
