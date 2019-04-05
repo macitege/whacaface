@@ -36,7 +36,7 @@ export default class Home extends Component {
     return this.state.previousPlayers.length
   }
 
-  startGame = () => {
+  goToGame = () => {
     const { currentPlayer, playerName } = this.state
     if (!playerName) {
       return Alert.alert('Please enter a player name')
@@ -66,7 +66,7 @@ export default class Home extends Component {
         <Button
           containerStyle={styles.buttonContainer}
           style={styles.playButton}
-          onPress={this.startGame}>
+          onPress={this.goToGame}>
           Play!
         </Button>
 
