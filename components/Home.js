@@ -9,15 +9,15 @@ import {
 } from 'react-native';
 import Button from 'react-native-button'
 
-
-export default class Home extends Component {
+class Home extends Component {
   constructor() {
     super()
 
     this.state = {
       playerName: null,
       currentPlayer: null,
-      previousPlayers: [{
+      previousPlayers: [
+        {
         id: 0,
         name: 'Jennifer',
         score: 420
@@ -31,14 +31,22 @@ export default class Home extends Component {
         id: 2,
         name: 'Johnathan',
         score: 60
-      }]
+      }
+    ]
     }
   }
 
-  componentDidUpdate = () => {
-    const { currentPlayer } = this.state
+  static navigationOptions = {
+    title: 'Main Page'
+  }
+
+  componentDidUpdate = (prevProps, prevState) => {
+    const { currentPlayer, playerName } = this.state
+    if (prevState.playerName !== playerName) {
+      return null
+    }
     if (currentPlayer) {
-      this.props.navigation.navigate('Game', { currentPlayer: currentPlayer })
+      this.props.navigation.navigate('Game', { currentPlayer: currentPlayer, submitScore: this.submitScore })
     }
   }
 
@@ -57,12 +65,23 @@ export default class Home extends Component {
 
   handleChange = text => this.setState({ playerName: text })
 
+  submitScore = player => {
+    const { previousPlayers } = this.state
+    const newArray = [...previousPlayers]
+    if (player.id > newArray.length - 1) {
+        newArray.push(player)
+      }
+    this.setState({ currentPlayer: null, playerName: null, previousPlayers: newArray })
+  }
+
+  sortedPlayers = () => this.state.previousPlayers.sort((a,b) => b.score - a.score)
+
   render() {
     return (
       <View style={styles.mainContainer}>
 
         <View style={[styles.logoContainer, styles.content]}>
-          <Text style={styles.logo}>ಠ_ಠ</Text>
+          <Text style={styles.logo}>ಠ‿ಠ</Text>
         </View>
 
         <Text style={styles.logoText}>Wack A Face</Text>
@@ -77,28 +96,32 @@ export default class Home extends Component {
           containerStyle={styles.buttonContainer}
           style={styles.playButton}
           onPress={this.goToGame}>
-          Play!
+          Whac it!
         </Button>
 
         <View style={styles.leaderBoard}>
 
-          <Text style={styles.title}>(⌐■_■)     Leader Board     (◕‿◕✿)</Text>
+          <View style={[styles.row, styles.header]}>
+            <Text style={styles.kaomoji}>(⌐■_■)</Text>
+            <Text style={styles.title}>Previous Games</Text>
+            <Text style={styles.kaomoji}>(◕‿◕✿)</Text>
+          </View>
           <View style={styles.row}>
             <Text style={[styles.categories, styles.centerIt]}>Rank</Text>
             <Text style={[styles.categories, styles.centerIt]}>Player</Text>
             <Text style={[styles.categories, styles.centerIt]}>Score</Text>
           </View>
-          <View>
-            {this.state.previousPlayers.map((player, i) => {
+          <ScrollView>
+            { this.sortedPlayers().map((player, i) => {
               return (
                 <View key={player.id} style={styles.row}>
-                  <Text style={styles.centerIt}>{i + 1}{i < 1 ? 'st   (°▽°)/' : i < 2 ? 'nd (^-^*)/' : i < 3 ? 'rd (・_・)ノ' : null}</Text>
+                  <Text style={styles.centerIt}>{i + 1}{i < 1 ? 'st   (°▽°)/' : i < 2 ? 'nd (^-^*)/' : i < 3 ? 'rd (・_・)ノ' : 'th'}</Text>
                   <Text style={styles.centerIt}>{player.name}</Text>
                   <Text style={styles.centerIt}>{player.score}</Text>
                 </View>
               )
             })}
-          </View>
+          </ScrollView>
         </View>
       </View>
     )
@@ -127,7 +150,7 @@ export const styles = StyleSheet.create({
   },
   logoText: {
     fontSize: 50,
-    marginTop: -20,
+    marginTop: -10,
     color: '#fefefe',
   },
   playerName: {
@@ -153,13 +176,13 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 20,
+    bottom: 10,
     width: '100%',
+    height: 200,
   },
   title: {
-    width: '100%',
+    // width: '100%',
     fontSize: 20,
-    backgroundColor: '#A5A5ED',
     padding: 10,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -173,10 +196,21 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#A5A5ED',
     justifyContent: 'space-around',
+    alignItems: 'center',
     padding: 5,
   },
   centerIt: {
     textAlign: 'center',
     width: '30%',
+  },
+  kaomoji: {
+    color: '#A5A5ED',
+    fontSize: 25,
+  },
+  header: {
+    backgroundColor: '#42426A',
+    opacity: 0.8,
   }
 });
+
+export default Home

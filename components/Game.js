@@ -1,9 +1,11 @@
 import React, { Component } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, Alert } from 'react-native'
 import { styles } from './Home'
 import Button from 'react-native-button'
+import { withNavigationFocus } from 'react-navigation'
 
-export default class Game extends Component {
+
+class Game extends Component {
   constructor (props) {
     super(props)
 
@@ -12,6 +14,7 @@ export default class Game extends Component {
       timer: 60,
       aliveFace: 'ಠ_ಠ',
       deadFace: '-_x',
+      surviveFace:'ಠ‿ಠ',
       holeOccupancy: [false, false, false, false, false, false, false, false],
       isGameOn: false
     }
@@ -26,11 +29,13 @@ export default class Game extends Component {
       // }
   }
 
-  componentDidUpdate = () => {
+  componentDidUpdate = (prevProps) => {
     if (this.state.timer === 0) {
-      clearInterval(this.timerInterval)
+      Alert.alert('Time is over ಠ‿ಠ')
+      this.toggleGame()
     }
   }
+
 
   decrement = () => this.state.timer ? this.setState(prevState => ({
     timer: prevState.timer - 1,
@@ -60,7 +65,7 @@ export default class Game extends Component {
     if (this.state.isGameOn) {
       clearInterval(this.timerInterval)
       clearInterval(this.gameInterval)
-      this.setState({ timer: 60, holeOccupancy: new Array(8).fill(false) })
+      this.setState({ timer: 60, holeOccupancy: new Array(8).fill(false), isGameOn: false })
     } else {
       this.timerInterval = setInterval(this.decrement, 1000)
       this.gameInterval = setInterval(this.showFaces, 500)
@@ -69,7 +74,8 @@ export default class Game extends Component {
   }
 
   evaluate = (id) => {
-    const { currentPlayer, holeOccupancy } = this.state
+    const { currentPlayer, holeOccupancy, isGameOn } = this.state
+    if (!isGameOn) return null
     if (this.state.holeOccupancy[id]) {
       const newState = [...holeOccupancy]
       newState[id] = !newState[id]
@@ -79,12 +85,17 @@ export default class Game extends Component {
     }
   }
 
+  submitScore = () => {
+    const player = {...this.state.currentPlayer}
+    const sendScores = this.props.navigation.getParam('submitScore')
+    sendScores(player)
+    this.props.navigation.goBack()
+  }
+
   render() {
     const { currentPlayer, timer, holeOccupancy, aliveFace, deadFace, isGameOn } = this.state
     return (
       <View style={styles.mainContainer}>
-        {/*<View style={stylesGame.curtain}></View>*/}
-
         <Text>Hello, {currentPlayer.name}! </Text>
         <Text>Please don't hit so hard. ಠ_ಠ</Text>
         <View style={[styles.row, stylesGame.overCurtain]}>
@@ -97,12 +108,14 @@ export default class Game extends Component {
             <Text style={stylesGame.time}>{timer === 60 ? '1:00' : timer < 10 ? '0:0' + timer : '0:' + timer}</Text>
           </View>
         </View>
+
+        {currentPlayer.score && !isGameOn ? <Button containerStyle={stylesGame.submitButton} style={styles.playButton} onPress={this.submitScore}>Submit Score</Button> :
         <Button
           containerStyle={[isGameOn ? stylesGame.stopButton : styles.buttonContainer, stylesGame.overCurtain]}
           style={styles.playButton}
           onPress={this.toggleGame}>
           {isGameOn ? 'Exit Game' : 'Start!'}
-        </Button>
+        </Button>}
 
         <View style={stylesGame.board}>
 
@@ -158,19 +171,21 @@ const stylesGame = StyleSheet.create({
     marginTop: 30,
     width: 250,
   },
+  submitButton: {
+    padding: 2,
+    borderRadius: 30,
+    backgroundColor: '#4D9078',
+    marginTop: 30,
+    width: 250,
+  },
   board: {
     height: 430,
     width: '100%',
     flexDirection: 'row',
     marginTop: 40,
     marginBottom: 80,
-    zIndex: 999,
-    position: 'absolute',
-    bottom: 0,
-    // backgroundColor: 'green'
   },
   col: {
-    // backgroundColor: 'tomato',
     flex: 1,
     justifyContent: 'space-around',
     alignItems: 'center',
@@ -193,16 +208,6 @@ const stylesGame = StyleSheet.create({
     color: '#000',
     fontSize: 40,
   },
-  // curtain: {
-  //   height: '100%',
-  //   width: '100%',
-  //   backgroundColor: 'black',
-  //   opacity: 0.5,
-  //   position: 'absolute',
-  //   zIndex: 998,
-  // },
-  // overCurtain : {
-  //   zIndex: 999,
-  //   position: 'absolute',
-  // },
 })
+
+export default withNavigationFocus(Game)
