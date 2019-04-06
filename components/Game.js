@@ -81,7 +81,7 @@ class Game extends Component {
       newState[id] = !newState[id]
       this.setState({ currentPlayer: {...currentPlayer, score: currentPlayer.score + 10}, holeOccupancy: newState })
     } else {
-      this.setState({ currentPlayer: {...currentPlayer, score: currentPlayer.score - 5} })
+      this.setState({ currentPlayer: {...currentPlayer, score: currentPlayer.score > 4 ? currentPlayer.score - 5 : currentPlayer.score = currentPlayer.score} })
     }
   }
 
