@@ -19,8 +19,18 @@ export default class Home extends Component {
       currentPlayer: null,
       previousPlayers: [{
         id: 0,
+        name: 'Jennifer',
+        score: 420
+      },
+      {
+        id: 1,
         name: 'Ege',
         score: 120
+      },
+      {
+        id: 2,
+        name: 'Johnathan',
+        score: 60
       }]
     }
   }
@@ -71,19 +81,20 @@ export default class Home extends Component {
         </Button>
 
         <View style={styles.leaderBoard}>
-          <Text style={styles.title}>Leader Board</Text>
-          <View style={[styles.categories, styles.row]}>
-            <Text> Rank </Text>
-            <Text> Player </Text>
-            <Text> Score </Text>
+
+          <Text style={styles.title}>(⌐■_■)     Leader Board     (◕‿◕✿)</Text>
+          <View style={styles.row}>
+            <Text style={[styles.categories, styles.centerIt]}>Rank</Text>
+            <Text style={[styles.categories, styles.centerIt]}>Player</Text>
+            <Text style={[styles.categories, styles.centerIt]}>Score</Text>
           </View>
           <View>
             {this.state.previousPlayers.map((player, i) => {
               return (
                 <View key={player.id} style={styles.row}>
-                  <Text> {i + 1} </Text>
-                  <Text> {player.name} </Text>
-                  <Text> {player.score} </Text>
+                  <Text style={styles.centerIt}>{i + 1}{i < 1 ? 'st   (°▽°)/' : i < 2 ? 'nd (^-^*)/' : i < 3 ? 'rd (・_・)ノ' : null}</Text>
+                  <Text style={styles.centerIt}>{player.name}</Text>
+                  <Text style={styles.centerIt}>{player.score}</Text>
                 </View>
               )
             })}
@@ -97,7 +108,7 @@ export default class Home extends Component {
 export const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: '#fefefe',
+    backgroundColor: '#9191E9',
     alignItems: 'center',
   },
   content: {
@@ -112,15 +123,18 @@ export const styles = StyleSheet.create({
   },
   logo: {
     fontSize: 70,
-    color: '#522',
+    color: '#42426A',
   },
   logoText: {
     fontSize: 50,
-    color: '#522',
+    marginTop: -20,
+    color: '#fefefe',
   },
   playerName: {
     fontSize: 30,
-    marginTop: 50,
+    marginTop: 80,
+    color: '#fefefe',
+    fontWeight: 'bold',
   },
   playButton : {
     fontSize: 25,
@@ -137,29 +151,32 @@ export const styles = StyleSheet.create({
   },
   leaderBoard : {
     alignItems: 'center',
-    marginTop: 110,
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 20,
     width: '100%',
   },
   title: {
     width: '100%',
     fontSize: 20,
-    backgroundColor: '#FB0E',
+    backgroundColor: '#A5A5ED',
     padding: 10,
     fontWeight: 'bold',
     textAlign: 'center',
+    color: '#F4D35E',
   },
   categories: {
-    width: '100%',
     fontSize: 20,
-    backgroundColor: '#FB0D',
-    marginBottom: 5,
-    padding: 5,
-    textDecorationLine: 'underline',
   },
   row: {
     width: '100%',
     flexDirection: 'row',
+    backgroundColor: '#A5A5ED',
     justifyContent: 'space-around',
-    backgroundColor: '#FB0D',
+    padding: 5,
+  },
+  centerIt: {
+    textAlign: 'center',
+    width: '30%',
   }
 });

@@ -12,12 +12,12 @@ export default class App extends React.Component {
 }
 
 const MainNavigator = createStackNavigator({
-  Game: {
-    screen: Game
-  },
   Home: {
     screen: Home
   },
+  Game: {
+    screen: Game
+  }
 });
 
 const AppNavigator = createAppContainer(MainNavigator);

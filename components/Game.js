@@ -9,7 +9,7 @@ export default class Game extends Component {
 
     this.state = {
       currentPlayer: {...props.navigation.getParam('currentPlayer'), score: 0},
-      timer: 30,
+      timer: 60,
       aliveFace: 'ಠ_ಠ',
       deadFace: '-_x',
       holeOccupancy: [false, false, false, false, false, false, false, false],
@@ -83,10 +83,11 @@ export default class Game extends Component {
     const { currentPlayer, timer, holeOccupancy, aliveFace, deadFace, isGameOn } = this.state
     return (
       <View style={styles.mainContainer}>
+        {/*<View style={stylesGame.curtain}></View>*/}
 
         <Text>Hello, {currentPlayer.name}! </Text>
         <Text>Please don't hit so hard. ಠ_ಠ</Text>
-        <View style={styles.row}>
+        <View style={[styles.row, stylesGame.overCurtain]}>
           <View style={{alignItems:'center'}}>
             <Text>Score: </Text>
             <Text style={stylesGame.score}>{currentPlayer.score}</Text>
@@ -97,7 +98,7 @@ export default class Game extends Component {
           </View>
         </View>
         <Button
-          containerStyle={isGameOn ? stylesGame.stopButton : styles.buttonContainer}
+          containerStyle={[isGameOn ? stylesGame.stopButton : styles.buttonContainer, stylesGame.overCurtain]}
           style={styles.playButton}
           onPress={this.toggleGame}>
           {isGameOn ? 'Exit Game' : 'Start!'}
@@ -158,11 +159,14 @@ const stylesGame = StyleSheet.create({
     width: 250,
   },
   board: {
-    flex: 1,
+    height: 430,
     width: '100%',
     flexDirection: 'row',
     marginTop: 40,
     marginBottom: 80,
+    zIndex: 999,
+    position: 'absolute',
+    bottom: 0,
     // backgroundColor: 'green'
   },
   col: {
@@ -174,7 +178,7 @@ const stylesGame = StyleSheet.create({
     padding: 5,
   },
   hole: {
-    backgroundColor: '#B4436C',
+    backgroundColor: '#fefefe',
     height: '20%',
     width: '80%',
     borderRadius: 100,
@@ -182,11 +186,23 @@ const stylesGame = StyleSheet.create({
     alignItems: 'center',
   },
   faceAlive: {
-    color: '#F9E2AE',
+    color: '#000',
     fontSize: 40,
   },
   faceDead: {
-    color: '#9EEC95',
+    color: '#000',
     fontSize: 40,
-  }
+  },
+  // curtain: {
+  //   height: '100%',
+  //   width: '100%',
+  //   backgroundColor: 'black',
+  //   opacity: 0.5,
+  //   position: 'absolute',
+  //   zIndex: 998,
+  // },
+  // overCurtain : {
+  //   zIndex: 999,
+  //   position: 'absolute',
+  // },
 })
