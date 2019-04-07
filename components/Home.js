@@ -47,7 +47,7 @@ class Home extends Component {
           <Text style={styles.logo}>ಠ‿ಠ</Text>
         </View>
 
-        <Text style={styles.logoText}>Wack A Face</Text>
+        <Text style={styles.logoText}>Whac A Face</Text>
 
         <TextInput
           onChangeText={this.handleChange}

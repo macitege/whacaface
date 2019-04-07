@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Whac-A-Face",
+    "name": "Whac-A-Face ಠ‿ಠ",
     "slug": "whacaface",
     "privacy": "public",
     "sdkVersion": "32.0.0",
@@ -24,6 +24,8 @@
     ],
     "ios": {
       "supportsTablet": true
-    }
+    },
+    "description": "Whac-A-Face is a game for mobile devices that was created for practicing React Native and Redux.",
+    "githubUrl": "https://github.com/macitege/whacaface"
   }
 }
