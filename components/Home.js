@@ -8,73 +8,36 @@ import {
   Alert
 } from 'react-native';
 import Button from 'react-native-button'
+import store from './store/store'
+import { updatePlayerName, createCurrentPlayer } from './store/actions'
+import { connect } from 'react-redux'
 
 class Home extends Component {
   constructor() {
     super()
-
-    this.state = {
-      playerName: null,
-      currentPlayer: null,
-      previousPlayers: [
-        {
-        id: 0,
-        name: 'Jennifer',
-        score: 420
-      },
-      {
-        id: 1,
-        name: 'Ege',
-        score: 120
-      },
-      {
-        id: 2,
-        name: 'Johnathan',
-        score: 60
-      }
-    ]
-    }
   }
 
   static navigationOptions = {
     title: 'Main Page'
   }
 
-  componentDidUpdate = (prevProps, prevState) => {
-    const { currentPlayer, playerName } = this.state
-    if (prevState.playerName !== playerName) {
-      return null
-    }
-    if (currentPlayer) {
-      this.props.navigation.navigate('Game', { currentPlayer: currentPlayer, submitScore: this.submitScore })
-    }
-  }
-
   generateId = () => {
-    return this.state.previousPlayers.length
+    return this.props.previousPlayers.length
   }
 
   goToGame = () => {
-    const { currentPlayer, playerName } = this.state
-    if (!playerName) {
+    const name = this.props.playerName
+    if (!name) {
       return Alert.alert('Please enter a player name')
     }
     const newId = this.generateId()
-    this.setState({ currentPlayer: { name: playerName, id: newId } })
+    store.dispatch(createCurrentPlayer({ name: name, id: newId, score: 0 }))
+    this.props.navigation.navigate('Game')
   }
 
-  handleChange = text => this.setState({ playerName: text })
+  handleChange = text => store.dispatch(updatePlayerName(text))
 
-  submitScore = player => {
-    const { previousPlayers } = this.state
-    const newArray = [...previousPlayers]
-    if (player.id > newArray.length - 1) {
-        newArray.push(player)
-      }
-    this.setState({ currentPlayer: null, playerName: null, previousPlayers: newArray })
-  }
-
-  sortedPlayers = () => this.state.previousPlayers.sort((a,b) => b.score - a.score)
+  sortedPlayers = () => this.props.previousPlayers.sort((a,b) => b.score - a.score)
 
   render() {
     return (
@@ -88,7 +51,7 @@ class Home extends Component {
 
         <TextInput
           onChangeText={this.handleChange}
-          value={this.state.playerName}
+          value={store.getState().playerName}
           placeholder="Type a player name"
           style={styles.playerName}/>
 
@@ -213,4 +176,9 @@ export const styles = StyleSheet.create({
   }
 });
 
-export default Home
+const mapStateToProps = state => ({
+  playerName: state.playerName,
+  currentPlayer: state.currentPlayer,
+  previousPlayers: state.previousPlayers,
+})
+export default connect(mapStateToProps)(Home)

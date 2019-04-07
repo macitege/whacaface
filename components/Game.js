@@ -3,97 +3,99 @@ import { View, Text, StyleSheet, Alert } from 'react-native'
 import { styles } from './Home'
 import Button from 'react-native-button'
 import { withNavigationFocus } from 'react-navigation'
+import { connect } from 'react-redux'
+import store from './store/store'
+import {
+  updateHoles,
+  submitScore,
+  updatePreviousPlayers,
+  updatePlayerName
+} from './store/actions'
 
 
 class Game extends Component {
   constructor (props) {
     super(props)
-
-    this.state = {
-      currentPlayer: {...props.navigation.getParam('currentPlayer'), score: 0},
-      timer: 60,
-      aliveFace: 'ಠ_ಠ',
-      deadFace: '-_x',
-      surviveFace:'ಠ‿ಠ',
-      holeOccupancy: [false, false, false, false, false, false, false, false],
-      isGameOn: false
-    }
-
-      // this.state = {
-      //   currentPlayer: {
-      //     id: 0,
-      //     name: 'Ege',
-      //     score: 0
-      //   },
-      //   timer: 60
-      // }
   }
 
   componentDidUpdate = (prevProps) => {
-    if (this.state.timer === 0) {
+    if (this.props.timer === 0) {
       Alert.alert('Time is over ಠ‿ಠ')
       this.toggleGame()
     }
+    // IF THE PLAYER CHANGES PAGE DURING GAME, END THE GAME
+    if (prevProps.isFocused !== this.props.isFocused) {
+      if (this.props.isGameOn) {
+        store.dispatch({ type: 'TOGGLEGAME' })
+      }
+      this.clearGame()
+      store.dispatch({ type: 'RESETSCORE' })
+    }
   }
 
-
-  decrement = () => this.state.timer ? this.setState(prevState => ({
-    timer: prevState.timer - 1,
-  })) : null
+  decrement = () => store.dispatch({ type: 'COUNTDOWN' })
 
   showFaces = () => {
-    const { holeOccupancy } = this.state
+    const { holeOccupancy } = this.props
     let faceCounter = 0
-    holeOccupancy.forEach(el => {
-      el ? faceCounter++ : null
-    })
-
+    holeOccupancy.forEach(el => { el ? faceCounter++ : null })
     const randomPlace = Math.floor(Math.random() * 8)
     const newState = [...holeOccupancy]
 
     if (faceCounter < 3) {
       newState[randomPlace] = !newState[randomPlace]
-      this.setState({ holeOccupancy: newState})
+      store.dispatch(updateHoles(newState))
     } else {
       const i = newState.indexOf(true)
       newState[i] = false
-      this.setState({ holeOccupancy: newState})
+      store.dispatch(updateHoles(newState))
     }
   }
 
+  clearGame = () => {
+    clearInterval(this.timerInterval)
+    clearInterval(this.gameInterval)
+    store.dispatch({ type: 'RESETTIMER' })
+    store.dispatch(updateHoles(new Array(8).fill(false)))
+  }
+
   toggleGame = () => {
-    if (this.state.isGameOn) {
-      clearInterval(this.timerInterval)
-      clearInterval(this.gameInterval)
-      this.setState({ timer: 60, holeOccupancy: new Array(8).fill(false), isGameOn: false })
+    if (this.props.isGameOn) {
+      this.clearGame()
     } else {
       this.timerInterval = setInterval(this.decrement, 1000)
       this.gameInterval = setInterval(this.showFaces, 500)
     }
-    this.setState({ isGameOn: !this.state.isGameOn })
+    store.dispatch({ type: 'TOGGLEGAME' })
   }
 
   evaluate = (id) => {
-    const { currentPlayer, holeOccupancy, isGameOn } = this.state
+    const { holeOccupancy, isGameOn } = this.props
     if (!isGameOn) return null
-    if (this.state.holeOccupancy[id]) {
+    if (holeOccupancy[id]) {
       const newState = [...holeOccupancy]
       newState[id] = !newState[id]
-      this.setState({ currentPlayer: {...currentPlayer, score: currentPlayer.score + 10}, holeOccupancy: newState })
+      store.dispatch(updateHoles(newState))
+      store.dispatch({ type: 'INCREMENT', amount: 10})
     } else {
-      this.setState({ currentPlayer: {...currentPlayer, score: currentPlayer.score > 4 ? currentPlayer.score - 5 : currentPlayer.score = currentPlayer.score} })
+      store.dispatch({ type: 'DECREMENT', amount: -5})
     }
   }
 
   submitScore = () => {
-    const player = {...this.state.currentPlayer}
-    const sendScores = this.props.navigation.getParam('submitScore')
-    sendScores(player)
+    const { score, currentPlayer, previousPlayers } = this.props
+    store.dispatch(submitScore({ score: score }))
+    store.dispatch(updatePreviousPlayers(currentPlayer))
+    store.dispatch(updatePlayerName(''))
+    store.dispatch({ type: 'RESETSCORE' })
+    store.dispatch({ type: 'TOGGLEGAME' })
+    // this.setState({ isGameOn: !this.state.isGameOn })
     this.props.navigation.goBack()
   }
 
   render() {
-    const { currentPlayer, timer, holeOccupancy, aliveFace, deadFace, isGameOn } = this.state
+    const { holeOccupancy, currentPlayer, timer, score, isGameOn } = this.props
+
     return (
       <View style={styles.mainContainer}>
         <Text>Hello, {currentPlayer.name}! </Text>
@@ -101,7 +103,7 @@ class Game extends Component {
         <View style={[styles.row, stylesGame.overCurtain]}>
           <View style={{alignItems:'center'}}>
             <Text>Score: </Text>
-            <Text style={stylesGame.score}>{currentPlayer.score}</Text>
+            <Text style={stylesGame.score}>{score}</Text>
           </View>
           <View style={{alignItems:'center'}}>
             <Text>Time: </Text>
@@ -109,7 +111,7 @@ class Game extends Component {
           </View>
         </View>
 
-        {currentPlayer.score && !isGameOn ? <Button containerStyle={stylesGame.submitButton} style={styles.playButton} onPress={this.submitScore}>Submit Score</Button> :
+        {score && !isGameOn ? <Button containerStyle={stylesGame.submitButton} style={styles.playButton} onPress={this.submitScore}>Submit Score</Button> :
         <Button
           containerStyle={[isGameOn ? stylesGame.stopButton : styles.buttonContainer, stylesGame.overCurtain]}
           style={styles.playButton}
@@ -121,32 +123,32 @@ class Game extends Component {
 
           <View style={stylesGame.col}>
             <View style={stylesGame.hole}>
-              <Button style={stylesGame.faceAlive} onPress={() => this.evaluate(0)}>{holeOccupancy[0] ? aliveFace : '     '}</Button>
+              <Button style={stylesGame.faceAlive} onPress={() => this.evaluate(0)}>{holeOccupancy[0] ? 'ಠ_ಠ' : '     '}</Button>
             </View>
             <View style={stylesGame.hole}>
-              <Button style={stylesGame.faceAlive}onPress={() => this.evaluate(1)}>{holeOccupancy[1] ? aliveFace : '     '}</Button>
+              <Button style={stylesGame.faceAlive}onPress={() => this.evaluate(1)}>{holeOccupancy[1] ? 'ಠ_ಠ' : '     '}</Button>
             </View>
             <View style={stylesGame.hole}>
-              <Button style={stylesGame.faceAlive}onPress={() => this.evaluate(2)}>{holeOccupancy[2] ? aliveFace : '     '}</Button>
-            </View>
-          </View>
-          <View style={stylesGame.col}>
-            <View style={stylesGame.hole}>
-              <Button style={stylesGame.faceDead}onPress={() => this.evaluate(3)}>{holeOccupancy[3] ? aliveFace : '     '}</Button>
-            </View>
-            <View style={stylesGame.hole}>
-              <Button style={stylesGame.faceDead}onPress={() => this.evaluate(4)}>{holeOccupancy[4] ? aliveFace : '     '}</Button>
+              <Button style={stylesGame.faceAlive}onPress={() => this.evaluate(2)}>{holeOccupancy[2] ? 'ಠ_ಠ' : '     '}</Button>
             </View>
           </View>
           <View style={stylesGame.col}>
             <View style={stylesGame.hole}>
-              <Button style={stylesGame.faceAlive}onPress={() => this.evaluate(5)}>{holeOccupancy[5] ? aliveFace : '     '}</Button>
+              <Button style={stylesGame.faceDead}onPress={() => this.evaluate(3)}>{holeOccupancy[3] ? 'ಠ_ಠ' : '     '}</Button>
             </View>
             <View style={stylesGame.hole}>
-              <Button style={stylesGame.faceDead}onPress={() => this.evaluate(6)}>{holeOccupancy[6] ? aliveFace : '     '}</Button>
+              <Button style={stylesGame.faceDead}onPress={() => this.evaluate(4)}>{holeOccupancy[4] ? 'ಠ_ಠ' : '     '}</Button>
+            </View>
+          </View>
+          <View style={stylesGame.col}>
+            <View style={stylesGame.hole}>
+              <Button style={stylesGame.faceAlive}onPress={() => this.evaluate(5)}>{holeOccupancy[5] ? 'ಠ_ಠ' : '     '}</Button>
             </View>
             <View style={stylesGame.hole}>
-              <Button style={stylesGame.faceAlive}onPress={() => this.evaluate(7)}>{holeOccupancy[7] ? aliveFace : '     '}</Button>
+              <Button style={stylesGame.faceDead}onPress={() => this.evaluate(6)}>{holeOccupancy[6] ? 'ಠ_ಠ' : '     '}</Button>
+            </View>
+            <View style={stylesGame.hole}>
+              <Button style={stylesGame.faceAlive}onPress={() => this.evaluate(7)}>{holeOccupancy[7] ? 'ಠ_ಠ' : '     '}</Button>
             </View>
           </View>
 
@@ -210,4 +212,11 @@ const stylesGame = StyleSheet.create({
   },
 })
 
-export default withNavigationFocus(Game)
+const mapStateToProps = state => ({
+  currentPlayer: state.currentPlayer,
+  timer: state.timer,
+  score: state.score,
+  holeOccupancy: state.holeOccupancy,
+  isGameOn: state.isGameOn,
+})
+export default withNavigationFocus(connect(mapStateToProps)(Game))
